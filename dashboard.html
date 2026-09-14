@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tansakusha Collection</title>
+  <link rel="icon" type="image/svg+xml" href="icons/tab-face.svg">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <main class="app">
+    <div class="topbar">
+      <span class="topmark" aria-hidden="true">✦Tansakusha collection✦</span>
+      <div class="topbar-actions">
+        <button id="backupExportBtn" class="mini-btn backup-btn" type="button">バックアップ保存</button>
+        <button id="backupImportBtn" class="mini-btn backup-btn" type="button">バックアップ読込</button>
+        <input id="backupFileInput" type="file" accept="application/json,.json,.tansakusha" hidden>
+        <span class="build-badge" title="現在読み込んでいる拡張機能のバージョン">v0.6.28</span>
+      </div>
+    </div>
+
+    <section class="panel add-panel" aria-label="キャラクターを追加">
+      <details class="source-block source-ccfolia">
+        <summary class="source-heading-row">
+          <div>
+            <div class="source-name">ココフォリア</div>
+            <div class="source-subtitle">部屋でコピーしたコマを取り込む</div>
+          </div>
+          <span class="source-arrow" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="json-edition-actions">
+          <button id="ccfolia6Btn" class="primary edition-import edition-6" type="button">6版として取り込む</button>
+          <button id="ccfolia7Btn" class="primary edition-import edition-7" type="button">7版として取り込む</button>
+        </div>
+        <p class="import-hint">コマを右クリック → コピー → このボタン。同じChromeプロフィールなら別ウィンドウでも取り込めます。部屋を開いたまま、最後にコピーしたコマの名前を確認して追加します。</p>
+      </details>
+
+      <div class="source-divider" aria-hidden="true"></div>
+
+      <details class="source-block source-charaeno">
+        <summary class="source-heading-row">
+          <div>
+            <div class="source-name">Charaeno</div>
+            <div class="source-subtitle">キャラシURLを貼る</div>
+          </div>
+          <span class="source-arrow" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="url-import-row">
+          <input id="charaenoUrlInput" type="url" autocomplete="off" spellcheck="false" placeholder="https://charaeno.com/6th/... または /7th/...">
+          <button id="charaenoUrlAddBtn" class="primary source-action" type="button">追加 / 更新</button>
+        </div>
+        <p class="import-hint">URLの /6th/・/7th/ から版を自動判定します。画像も初回取得後にChrome内部へ保存します。</p>
+      </details>
+
+      <div class="source-divider" aria-hidden="true"></div>
+
+      <details class="source-block source-iachara">
+        <summary class="source-heading-row">
+          <div>
+            <div class="source-name">いあきゃら</div>
+            <div class="source-subtitle">ココフォリア駒のデータを貼る</div>
+          </div>
+          <span class="source-arrow" aria-hidden="true">⌄</span>
+        </summary>
+        <textarea id="jsonInput" spellcheck="false" placeholder='{"kind":"character","data":{...}}'></textarea>
+        <div class="json-edition-actions">
+          <button id="json6Btn" class="primary edition-import edition-6" type="button">6版として追加 / 更新</button>
+          <button id="json7Btn" class="primary edition-import edition-7" type="button">7版として追加 / 更新</button>
+        </div>
+        <p class="import-hint">いあきゃらの「ココフォリア駒出力」を貼り付けて、版を選んで追加します。iconUrl の画像は初回取得後にChrome内部へ保存します。</p>
+      </details>
+      <p id="message" class="message" aria-live="polite"></p>
+    </section>
+
+    <section class="edition-tabs panel" aria-label="版の切り替え">
+      <button id="tabAll" class="edition-tab active" type="button" aria-pressed="true">すべて</button>
+      <button id="tab6th" class="edition-tab" type="button" aria-pressed="false">6版</button>
+      <button id="tab7th" class="edition-tab" type="button" aria-pressed="false">7版</button>
+    </section>
+
+    <section class="toolbar panel" aria-label="検索・並び替えと表示設定">
+      <div class="name-search-field">
+        <label class="label" for="nameSearchInput">名前で探す</label>
+        <div class="name-search-wrap">
+          <input id="nameSearchInput" type="search" autocomplete="off" spellcheck="false" placeholder="探索者名 / ルビ">
+          <button id="nameSearchToggle" class="name-search-toggle" type="button" aria-label="探索者候補を開く" aria-expanded="false">⌄</button>
+          <div id="nameSearchMenu" class="name-search-menu" role="listbox" hidden></div>
+        </div>
+      </div>
+      <div class="field-grow sort-field">
+        <label class="label" for="sortInput">高い順に並べる</label>
+        <input id="sortInput" type="text" list="sortDatalist" autocomplete="off" placeholder="例：目星 / APP 聞き耳">
+        <datalist id="sortDatalist"></datalist>
+        <div class="sort-hint">クリックで現在値を全選択 ／ ▽で入力欄だけクリア ／ 複数はスペース区切り（例：APP 聞き耳）／ 各項目の上位3人をピックアップ</div>
+      </div>
+      <button id="statusToggleBtn" class="toggle-btn" type="button" aria-pressed="false">STATUSを隠す</button>
+      <button id="skillToggleBtn" class="toggle-btn" type="button" aria-pressed="false">SKILLを隠す</button>
+      <div class="count-box">
+        <span id="countValue">0</span>
+        <small>探索者</small>
+      </div>
+    </section>
+
+    <section id="emptyState" class="empty-state" hidden>
+      <div class="empty-mark">✦</div>
+      <strong>まだ探索者がいません</strong>
+      <p>キャラシURL・駒JSON・ココフォリアでコピーしたコマから追加できます。</p>
+    </section>
+
+    <section id="cards" class="cards" aria-label="探索者一覧"></section>
+  </main>
+
+  <template id="cardTemplate">
+    <article class="character-card">
+      <div class="rank-badge"></div>
+      <div class="updated-date" aria-label="最終更新日"></div>
+      <div class="portrait-wrap">
+        <img class="portrait" alt="" loading="lazy">
+        <div class="portrait-fallback" aria-hidden="true"></div>
+      </div>
+      <div class="card-main">
+        <div class="name-row">
+          <div class="name-block">
+            <div class="character-name" tabindex="0"></div>
+            <div class="character-ruby"></div>
+          </div>
+          <button class="copy-name mini-btn" type="button" title="名前をコピー">Copy</button>
+        </div>
+        <div class="meta-line"></div>
+        <div class="color-chip" title="この探索者のWebカラー"><span class="color-dot"></span><span class="color-hex"></span></div>
+        <button class="score-row toggle-skills" type="button" title="全技能を開く" aria-expanded="false">
+          <span class="score-label"></span>
+          <strong class="score-value"></strong>
+          <span class="expand-mark" aria-hidden="true">⌄</span>
+        </button>
+        <div class="card-actions">
+          <button class="open-sheet mini-btn" type="button">キャラシ</button>
+          <button class="show-skills mini-btn" type="button">技能一覧</button>
+          <button class="mask-skill mini-btn privacy-btn" type="button" title="このキャラのSKILL数値だけ伏せる（技能名と枠は残します）" aria-pressed="false">SKILL伏せ</button>
+          <button class="mask-status mini-btn privacy-btn" type="button" title="このキャラのSTATUS数値だけ伏せる（項目名と枠は残します）" aria-pressed="false">STATUS伏せ</button>
+          <button class="toggle-edit mini-btn" type="button">編集</button>
+          <button class="delete-one mini-btn danger" type="button">削除</button>
+        </div>
+        <div class="edit-box" hidden>
+          <label>表示名<input class="edit-name" type="text"></label>
+          <label>ルビ<input class="edit-ruby" type="text" placeholder="例：たんさくしゃ るび"></label>
+          <label>版
+            <select class="edit-edition">
+              <option value="">未判定</option>
+              <option value="6th">6版</option>
+              <option value="7th">7版</option>
+            </select>
+          </label>
+          <div class="color-edit">
+            <label>Webカラー<input class="edit-color-text" type="text" maxlength="7" placeholder="#6F9E7A"></label>
+            <input class="edit-color-picker" type="color" aria-label="Webカラーを選択">
+          </div>
+          <div class="status-edit-grid" aria-label="SANを手動修正">
+            <label>SAN<input class="edit-san" type="number" step="1"></label>
+          </div>
+          <p class="edit-note">SANを手動修正した後、ココフォリアの値と違う場合は次回取り込み時にどちらを残すか選べます。</p>
+          <div class="skill-edit-row">
+            <label>技能修正
+              <select class="edit-skill-name"></select>
+            </label>
+            <label>値<input class="edit-skill-value" type="number" min="0" step="1"></label>
+            <button class="save-skill-edit mini-btn" type="button">技能値を変更</button>
+          </div>
+          <button class="save-edit primary small" type="button">表示・SANを保存</button>
+        </div>
+      </div>
+      <aside class="stats-panel" aria-label="ステータス一覧">
+        <div class="stats-heading">STATUS</div>
+        <div class="stats-grid primary-stats"></div>
+        <div class="derived-stats"></div>
+      </aside>
+      <section class="skills-drawer" hidden>
+        <div class="skills-drawer-head"><strong>SKILLS</strong><span class="skill-count"></span></div>
+        <div class="all-skills-grid"></div>
+      </section>
+    </article>
+  </template>
+
+  <script src="ccfolia.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
