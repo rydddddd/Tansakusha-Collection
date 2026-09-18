@@ -119,7 +119,9 @@ Google Analyticsなどのアクセス解析、広告SDK、独自のトラッキ�
 ---
 
 ## インストール方法
+Google Chrome拡張機能のストアから。
 
+あるいはGitHubから
 1. このリポジトリをダウンロード
 2. Chromeで `chrome://extensions/` を開く
 3. 「デベロッパーモード」をON
